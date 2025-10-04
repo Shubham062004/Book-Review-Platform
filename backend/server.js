@@ -14,19 +14,93 @@ dotenv.config();
 
 const app = express();
 
+// 🚀 ENHANCED CORS CONFIGURATION FOR VERCEL
+const corsOptions = {
+  origin: [
+    // Local development
+    'http://localhost:5173',
+    'http://localhost:8080', 
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    
+    // Vercel deployments (both current and future)
+    'https://book-review-platform-oivm.vercel.app',
+    'https://*.vercel.app',
+    
+    // Add your custom domains if any
+    'https://book-review-frontend.vercel.app',
+    
+    // Render preview URLs
+    'https://*.onrender.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin'
+  ],
+  optionsSuccessStatus: 200, // For legacy browser support
+  preflightContinue: false
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
+// Additional CORS headers middleware
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'http://localhost:3000',
+    'https://book-review-platform-oivm.vercel.app',
+    'https://book-review-frontend.vercel.app'
+  ];
+  
+  if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  
+  next();
+});
+
 // Middleware
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:3000'],
-  credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logging middleware for debugging
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
+  next();
+});
 
 // Root route
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Book Review API is running!',
-    version: '1.0.0',
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    cors: 'enabled',
+    allowedOrigins: [
+      'https://book-review-platform-oivm.vercel.app',
+      'Local development ports'
+    ],
     endpoints: {
       health: '/api/health',
       auth: '/api/auth',
@@ -40,9 +114,14 @@ app.get('/', (req, res) => {
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ 
-    message: 'Book Review API is running!',
-    status: 'healthy',
-    timestamp: new Date().toISOString()
+    message: 'Book Review API is healthy!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    cors: {
+      enabled: true,
+      origin: req.headers.origin || 'not-provided'
+    }
   });
 });
 
@@ -91,6 +170,11 @@ const startServer = async () => {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🔗 API Base URL: https://book-review-platform-no15.onrender.com`);
+      console.log('🌐 CORS enabled for:');
+      console.log('  - https://book-review-platform-oivm.vercel.app');
+      console.log('  - localhost:5173');
+      console.log(`✅ CORS configured for Vercel deployment`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
