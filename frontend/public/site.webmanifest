@@ -1,0 +1,17 @@
+{
+  "name": "BookReview Platform",
+  "short_name": "BookReview",
+  "description": "Discover, review, and share amazing books with fellow readers worldwide.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#3B82F6",
+  "background_color": "#FFFFFF",
+  "icons": [
+    {
+      "src": "/book-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
