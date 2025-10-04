@@ -42,13 +42,22 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const [booksRes, reviewsRes] = await Promise.all([
-        api.get('/books/user/me'),
-        api.get('/reviews/user/me'),
+      console.log('🚀 Fetching user profile data');
+      // Since we don't have user-specific endpoints, we'll fetch all books and filter
+      const [allBooksResponse] = await Promise.all([
+        api.get('/api/books?limit=100')
       ]);
-      setUserBooks(booksRes.data);
-      setUserReviews(reviewsRes.data);
+      
+      // Filter books added by current user
+      const userOwnedBooks = allBooksResponse.data.books?.filter(
+        (book: any) => book.addedBy._id === user?.id
+      ) || [];
+      
+      console.log('✅ User books:', userOwnedBooks);
+      setUserBooks(userOwnedBooks);
+      setUserReviews([]); // Reviews endpoint not implemented yet
     } catch (error: any) {
+      console.error('❌ Fetch profile data error:', error);
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to fetch profile data',

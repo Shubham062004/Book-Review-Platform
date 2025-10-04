@@ -7,14 +7,17 @@ const Book = require('../models/Book');
 // @access  Public
 const getBookReviews = async (req, res) => {
   try {
+    console.log('📝 Getting reviews for book:', req.params.bookId);
+    
     const reviews = await Review.find({ bookId: req.params.bookId })
       .populate('userId', 'name')
       .sort({ createdAt: -1 });
 
+    console.log(`📝 Found ${reviews.length} reviews`);
     res.json(reviews);
 
   } catch (error) {
-    console.error('Get reviews error:', error);
+    console.error('❌ Get reviews error:', error);
     res.status(500).json({ message: 'Server error fetching reviews' });
   }
 };
@@ -24,9 +27,13 @@ const getBookReviews = async (req, res) => {
 // @access  Private
 const addReview = async (req, res) => {
   try {
+    console.log('📝 Adding review with data:', req.body);
+    console.log('📝 User:', req.user);
+
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ 
         message: 'Validation failed', 
         errors: errors.array() 
@@ -60,13 +67,15 @@ const addReview = async (req, res) => {
 
     const populatedReview = await Review.findById(review._id).populate('userId', 'name');
 
+    console.log('✅ Review created successfully:', populatedReview);
+
     res.status(201).json({
       message: 'Review added successfully',
       review: populatedReview
     });
 
   } catch (error) {
-    console.error('Add review error:', error);
+    console.error('❌ Add review error:', error);
     res.status(500).json({ message: 'Server error adding review' });
   }
 };
@@ -76,9 +85,12 @@ const addReview = async (req, res) => {
 // @access  Private (only review author)
 const updateReview = async (req, res) => {
   try {
+    console.log('📝 Updating review:', req.params.id, req.body);
+
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ 
         message: 'Validation failed', 
         errors: errors.array() 
@@ -104,13 +116,15 @@ const updateReview = async (req, res) => {
       { new: true, runValidators: true }
     ).populate('userId', 'name');
 
+    console.log('✅ Review updated successfully:', updatedReview);
+
     res.json({
       message: 'Review updated successfully',
       review: updatedReview
     });
 
   } catch (error) {
-    console.error('Update review error:', error);
+    console.error('❌ Update review error:', error);
     res.status(500).json({ message: 'Server error updating review' });
   }
 };

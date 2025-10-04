@@ -35,7 +35,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('🚀 Attempting login with:', { email });
       const response = await api.post('/api/auth/login', { email, password });
+      console.log('✅ Login response:', response.data);
+      
       const { token: newToken, user: newUser } = response.data;
       
       setToken(newToken);
@@ -45,21 +48,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       return { success: true };
     } catch (error: any) {
+      console.error('❌ Login error:', error);
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: error.response?.data?.message || error.message || 'Login failed' 
       };
     }
   };
 
   const signup = async (name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('🚀 Attempting signup with:', { name, email });
       await api.post('/api/auth/signup', { name, email, password });
       return { success: true };
     } catch (error: any) {
+      console.error('❌ Signup error:', error);
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Signup failed' 
+        error: error.response?.data?.message || error.message || 'Signup failed' 
       };
     }
   };

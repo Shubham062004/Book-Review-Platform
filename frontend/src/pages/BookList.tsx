@@ -30,10 +30,14 @@ const BookList = () => {
   const fetchBooks = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/books?page=${page}&limit=6`);
-      setBooks(response.data.books);
-      setTotalPages(response.data.totalPages);
+      console.log('🚀 Fetching books from:', `/api/books?page=${page}&limit=6`);
+      const response = await api.get(`/api/books?page=${page}&limit=6`);
+      console.log('✅ Books response:', response.data);
+      
+      setBooks(response.data.books || []);
+      setTotalPages(response.data.pagination?.totalPages || 1);
     } catch (error: any) {
+      console.error('❌ Fetch books error:', error);
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to fetch books',

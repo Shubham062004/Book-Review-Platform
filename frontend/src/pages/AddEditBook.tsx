@@ -33,7 +33,9 @@ const AddEditBook = () => {
 
   const fetchBook = async () => {
     try {
-      const response = await api.get(`/books/${id}`);
+      console.log('🚀 Fetching book for edit:', id);
+      const response = await api.get(`/api/books/${id}`);
+      console.log('✅ Book data:', response.data);
       const book = response.data;
       setFormData({
         title: book.title,
@@ -43,6 +45,7 @@ const AddEditBook = () => {
         year: book.year?.toString() || '',
       });
     } catch (error: any) {
+      console.error('❌ Fetch book error:', error);
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to fetch book',
@@ -72,13 +75,15 @@ const AddEditBook = () => {
 
     try {
       if (isEdit) {
-        await api.put(`/books/${id}`, payload);
+        console.log('🚀 Updating book:', id, payload);
+        await api.put(`/api/books/${id}`, payload);
         toast({
           title: 'Success',
           description: 'Book updated successfully',
         });
       } else {
-        await api.post('/books', payload);
+        console.log('🚀 Creating new book:', payload);
+        await api.post('/api/books', payload);
         toast({
           title: 'Success',
           description: 'Book added successfully',

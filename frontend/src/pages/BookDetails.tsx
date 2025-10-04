@@ -53,13 +53,29 @@ const BookDetails = () => {
 
   const fetchBookDetails = async () => {
     try {
+      console.log('🚀 Fetching book details for ID:', id);
       const [bookRes, reviewsRes] = await Promise.all([
-        api.get(`/books/${id}`),
-        api.get(`/reviews/${id}`),
+        api.get(`/api/books/${id}`),
+        api.get(`/api/reviews/${id}`),
       ]);
+      console.log('✅ Book response:', bookRes.data);
+      console.log('✅ Reviews response:', reviewsRes.data);
+      
+      // Debug each review
+      reviewsRes.data.forEach((review: any, index: number) => {
+        console.log(`📝 Review ${index}:`, {
+          id: review._id,
+          rating: review.rating,
+          reviewText: review.reviewText,
+          textLength: review.reviewText?.length,
+          user: review.userId?.name
+        });
+      });
+      
       setBook(bookRes.data);
       setReviews(reviewsRes.data);
     } catch (error: any) {
+      console.error('❌ Fetch book details error:', error);
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to fetch book details',
@@ -72,6 +88,14 @@ const BookDetails = () => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('📝 Review submission data:', {
+      bookId: id,
+      rating: newRating,
+      reviewText: newReview,
+      user: user
+    });
+
     if (!newRating || !newReview.trim()) {
       toast({
         title: 'Invalid input',
@@ -83,11 +107,17 @@ const BookDetails = () => {
 
     setSubmitting(true);
     try {
-      await api.post('/reviews', {
+      const payload = {
         bookId: id,
         rating: newRating,
-        review: newReview,
-      });
+        reviewText: newReview, // Fixed: was 'review', now 'reviewText'
+      };
+
+      console.log('📝 Sending payload:', payload);
+
+      const response = await api.post('/api/reviews', payload);
+      
+      console.log('✅ Review response:', response.data);
 
       toast({
         title: 'Success',
@@ -98,6 +128,7 @@ const BookDetails = () => {
       setNewReview('');
       fetchBookDetails();
     } catch (error: any) {
+      console.error('❌ Review submission error:', error.response?.data);
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to submit review',
@@ -112,7 +143,7 @@ const BookDetails = () => {
     if (!confirm('Are you sure you want to delete this book?')) return;
 
     try {
-      await api.delete(`/books/${id}`);
+      await api.delete(`/api/books/${id}`);
       toast({
         title: 'Success',
         description: 'Book deleted successfully',
@@ -127,11 +158,44 @@ const BookDetails = () => {
     }
   };
 
+  const handleEditReview = async (reviewId: string, rating: number, reviewText: string) => {
+    try {
+      console.log('📝 Editing review:', { reviewId, rating, reviewText });
+      
+      const response = await api.put(`/api/reviews/${reviewId}`, {
+        rating,
+        reviewText
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Review updated successfully',
+      });
+
+      // Update the review in state
+      setReviews(reviews.map(review => 
+        review._id === reviewId 
+          ? { ...review, rating, reviewText }
+          : review
+      ));
+
+      await fetchBookDetails(); // Refresh to get updated average rating
+    } catch (error: any) {
+      console.error('❌ Edit review error:', error);
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to update review',
+        variant: 'destructive',
+      });
+      throw error; // Re-throw so ReviewCard can handle loading state
+    }
+  };
+
   const handleDeleteReview = async (reviewId: string) => {
     if (!confirm('Are you sure you want to delete this review?')) return;
 
     try {
-      await api.delete(`/reviews/${reviewId}`);
+      await api.delete(`/api/reviews/${reviewId}`);
       toast({
         title: 'Success',
         description: 'Review deleted successfully',
@@ -271,14 +335,18 @@ const BookDetails = () => {
               </CardContent>
             </Card>
           ) : (
-            reviews.map((review) => (
-              <ReviewCard
-                key={review._id}
-                review={review}
-                currentUserId={user?.id}
-                onDelete={handleDeleteReview}
-              />
-            ))
+            reviews.map((review) => {
+              console.log('📝 Mapping review:', review); // Debug log
+              return (
+                <ReviewCard
+                  key={review._id}
+                  review={review}
+                  currentUserId={user?.id}
+                  onEdit={user?.id === review.userId._id ? handleEditReview : undefined}
+                  onDelete={user?.id === review.userId._id ? handleDeleteReview : undefined}
+                />
+              );
+            })
           )}
         </div>
       </div>

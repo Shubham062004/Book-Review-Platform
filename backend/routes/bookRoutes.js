@@ -41,6 +41,15 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Book routes are working!' });
 });
 
+// Test route for invalid ObjectId
+router.get('/test/:id', (req, res) => {
+  const mongoose = require('mongoose');
+  res.json({ 
+    message: `Test route for book ID: ${req.params.id}`,
+    isValidObjectId: mongoose.Types.ObjectId.isValid(req.params.id)
+  });
+});
+
 // Routes
 router.get('/', getBooks);
 router.get('/:id', getBook);

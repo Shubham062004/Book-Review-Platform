@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { BookOpen, LogOut, User, Plus } from 'lucide-react';
+import { BookOpen, LogOut, User, Plus, Heart } from 'lucide-react';
 
 const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -35,6 +35,17 @@ const Navbar = () => {
                   <Link to="/books">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Books
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="text-foreground hover:text-red-600"
+                >
+                  <Link to="/wishlist">
+                    <Heart className="h-4 w-4 mr-2" />
+                    Wishlist
                   </Link>
                 </Button>
                 <Button

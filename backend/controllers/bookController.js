@@ -83,6 +83,12 @@ const getBook = async (req, res) => {
 
   } catch (error) {
     console.error('Get book error:', error);
+    
+    // Handle invalid ObjectId
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid book ID format' });
+    }
+    
     res.status(500).json({ message: 'Server error fetching book' });
   }
 };

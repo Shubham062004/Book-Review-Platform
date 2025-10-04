@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -30,7 +31,8 @@ app.get('/', (req, res) => {
       health: '/api/health',
       auth: '/api/auth',
       books: '/api/books',
-      reviews: '/api/reviews'
+      reviews: '/api/reviews',
+      wishlist: '/api/wishlist'
     }
   });
 });
@@ -48,6 +50,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -71,7 +74,9 @@ app.use('*', (req, res) => {
       'POST /api/auth/login',
       'GET /api/books',
       'GET /api/books/:id',
-      'GET /api/reviews/:bookId'
+      'GET /api/reviews/:bookId',
+      'GET /api/wishlist',
+      'POST /api/wishlist/:bookId'
     ]
   });
 });
